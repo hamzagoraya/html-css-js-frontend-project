@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flip Page Full Screen Sign Up / Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+    body, html {
+      margin: 0;
+      height: 100%;
+      font-family: 'Montserrat', sans-serif;
+      background: url('signup-background.png') no-repeat center center/cover;
+      overflow: hidden;
+      color: #00ffff;
+    }
+
+    .book-container {
+      width: 100vw;
+      height: 100vh;
+      perspective: 2000px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .book {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+      border-radius: 0;
+    }
+
+    .flipped {
+      transform: rotateY(-180deg);
+    }
+
+    .page {
+      position: absolute;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.9);
+      padding: 60px 40px;
+      box-sizing: border-box;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #00ffff;
+    }
+
+    .left-page {
+      left: 0;
+      top: 0;
+      z-index: 2;
+    }
+
+    .right-page {
+      right: 0;
+      top: 0;
+      transform: rotateY(180deg);
+      z-index: 1;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-weight: 600;
+      color: #00ffff;
+    }
+
+    input {
+      width: 300px;
+      max-width: 80vw;
+      margin: 15px 0;
+      padding: 15px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #00ffff;
+      border-radius: 6px;
+      color: #00ffff;
+      font-size: 18px;
+      outline: none;
+      transition: background-color 0.3s;
+    }
+
+    input:focus {
+      background: rgba(255,255,255,0.1);
+    }
+
+    button {
+      background: #00ffff;
+      color: #000;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      box-shadow: none;
+      transition: box-shadow 0.3s ease;
+      margin-top: 25px;
+      padding: 14px 35px;
+      font-size: 18px;
+    }
+    button:hover {
+      box-shadow: 0 0 15px #00ffff;
+    }
+
+    .login-password-group {
+      display: flex;
+      width: 330px;
+      max-width: 80vw;
+      margin-bottom: 10px;
+    }
+
+    .login-password-group input {
+      flex: 1;
+      margin-right: 10px;
+    }
+
+    .login-password-group button {
+      width: 120px;
+      padding: 16px;
+      font-size: 16px;
+      align-self: flex-start;
+      margin-top: 0;
+    }
+
+    .form-navigation {
+      margin-top: 18px;
+      font-size: 16px;
+      color: #00ffff;
+      user-select: none;
+    }
+
+    .form-navigation span {
+      color: #888;
+    }
+
+    .form-navigation a {
+      color: #00ffff;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-left: 5px;
+    }
+    .form-navigation a:hover {
+      color: #33ffff;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-top: -10px;
+    }
+
+  </style>
+</head>
+<body>
+
+<div class="book-container">
+  <div id="book" class="book">
+
+    <!-- Left Page (Signup) -->
+    <div class="page left-page" id="signup-page">
+      <div id="signup-form">
+        <h2>Sign Up</h2>
+        <input type="text" id="signup-name" placeholder="Full Name" /><br>
+        <input type="email" id="signup-email" placeholder="Email Address" /><br>
+        <input type="password" id="signup-password" placeholder="Password" /><br>
+        <input type="password" id="signup-confirm-password" placeholder="Confirm Password" /><br>
+        <button id="signupBtnLeft">Sign Up</button>
+        <div class="form-navigation">
+          <span>Already have an account?</span>
+          <a id="flipToLoginLeft">Login</a>
+        </div>
+        <div id="signup-errors" class="error-message"></div>
+      </div>
+    </div>
+
+    <!-- Right Page (Login) -->
+    <div class="page right-page" id="login-page">
+      <div id="login-form">
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email Address" />
+        <div class="login-password-group">
+          <input type="password" id="login-password" placeholder="Password" />
+        </div>
+        <button id="loginFormBtn">Login</button>
+        <div class="form-navigation">
+          <span>Don't have an account?</span>
+          <a id="flipToSignupFromLogin">Sign Up</a>
+        </div>
+        <div id="login-errors" class="error-message"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const book = document.getElementById('book');
+  
+  // Signup form validation
+  const signupBtnLeft = document.getElementById('signupBtnLeft');
+  const signupName = document.getElementById('signup-name');
+  const signupEmail = document.getElementById('signup-email');
+  const signupPassword = document.getElementById('signup-password');
+  const signupConfirmPassword = document.getElementById('signup-confirm-password');
+  const signupErrors = document.getElementById('signup-errors');
+  
+  signupBtnLeft.addEventListener('click', () => {
+    // Reset errors
+    signupErrors.textContent = '';
+
+    // Validation
+    if (!signupName.value || !signupEmail.value || !signupPassword.value || !signupConfirmPassword.value) {
+      signupErrors.textContent = 'All fields are required.';
+      return;
+    }
+
+    if (signupPassword.value !== signupConfirmPassword.value) {
+      signupErrors.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(signupEmail.value)) {
+      signupErrors.textContent = 'Invalid email address.';
+      return;
+    }
+
+    alert('Sign Up successful!');
+  });
+
+  // Login form validation
+  const loginBtn = document.getElementById('loginFormBtn');
+  const loginEmail = document.getElementById('login-email');
+  const loginPassword = document.getElementById('login-password');
+  const loginErrors = document.getElementById('login-errors');
+
+  const correctEmail = 'user@example.com';  // Hardcoded valid email
+  const correctPassword = 'password123';    // Hardcoded valid password
+  
+  loginBtn.addEventListener('click', () => {
+    // Reset errors
+    loginErrors.textContent = '';
+
+    // Validation
+    if (!loginEmail.value || !loginPassword.value) {
+      loginErrors.textContent = 'Both fields are required.';
+      return;
+    }
+
+    if (loginEmail.value !== correctEmail || loginPassword.value !== correctPassword) {
+      loginErrors.textContent = 'Email and password do not match.';
+      return;
+    }
+
+    // Redirect to home page on successful login
+    window.location.href = '/index.html';  // Change '/home' to your actual home page URL
+  });
+
+  // Flip from signup to login
+  const flipToLoginLeft = document.getElementById('flipToLoginLeft');
+  flipToLoginLeft.addEventListener('click', () => {
+    book.classList.add('flipped');
+    setTimeout(() => {
+      document.getElementById('signup-page').style.display = 'none';
+      document.getElementById('login-page').style.display = 'flex';
+    }, 500);  // Allow time for the flip animation to complete
+  });
+
+  // Flip from login to signup
+  const flipToSignupFromLogin = document.getElementById('flipToSignupFromLogin');
+  flipToSignupFromLogin.addEventListener('click', () => {
+    book.classList.remove('flipped');
+    setTimeout(() => {
+      document.getElementById('login-page').style.display = 'none';
+      document.getElementById('signup-page').style.display = 'flex';
+    }, 500);  // Allow time for the flip animation to complete
+  });
+
+</script>
+
+</body>
+</html>
